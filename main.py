@@ -34,7 +34,7 @@ def get_content(id, url):
     response = requests.get(cover_url, allow_redirects=False)
     response.raise_for_status()
     if response.status_code != 200:
-        return [None, None, None]
+        return [None, None, None, None]
 
     soup = BeautifulSoup(response.text, 'lxml')
 
@@ -46,7 +46,14 @@ def get_content(id, url):
     img_name = sanitize_filename(split_img_name[len(split_img_name) - 1].strip())
     img_url = urljoin(url, img)
 
-    return [filename, img_url, img_name]
+    html_comments = soup.find_all('div', class_='texts')
+    comments = {}
+    for comment in html_comments:
+        author = comment.find('b').text
+        comment_text = comment.find('span', class_='black').text
+        comments[author] = comment_text
+
+    return [filename, img_url, img_name, comments]
 
 
 if __name__ == '__main__':
@@ -54,17 +61,22 @@ if __name__ == '__main__':
         for id in range(1, 11):
             url = 'https://tululu.org'
             download_url = urljoin(url, 'txt.php?id={id}/'.format(id=id))
-            filename, img_url, img_name = get_content(id, url)
-            if filename:
-                filepath = download_book(download_url, filename)
+            filename, img_url, img_name, comments = get_content(id, url)
+            # if filename:
+            # filepath = download_book(download_url, filename)
             # print('filename =', filename)
             # print('img_url =', img_url)
 
-            if img_url:
-                img_path = download_img(img_url, img_name)
-                # print('img_path =', img_path)
+            # if img_url:
+            # img_path = download_img(img_url, img_name)
+            # print('img_path =', img_path)
 
             # print('filepath =', filepath, end='\n\n')
+
+            if comments:
+                for author, text in comments.items():
+                    print(author)
+                    print(text, end='\n\n')
 
     except requests.exceptions.MissingSchema as err:
         print('Invalid link to book')
