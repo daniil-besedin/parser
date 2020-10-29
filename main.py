@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 import json
+import argparse
 
 
 def download_book(url, filename, folder='books'):
@@ -77,14 +78,26 @@ def get_content(id, url, book_description):
     book_description['genres'] = genres
 
 
+def create_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--start_page', default=1)
+    parser.add_argument('--end_page', default=702)
+
+    return parser
+
+
 if __name__ == '__main__':
     try:
+        parser = create_parser()
+        args = parser.parse_args()
+
         base_url = 'https://tululu.org'
         template_genre_url = 'https://tululu.org/l55/{page}'
-        page_number = 1
+        start_page = int(args.start_page)
+        end_page = int(args.end_page)
         book_descriptions = []
 
-        for page in range(1, page_number + 1):
+        for page in range(start_page, end_page):
             genre_page_url = template_genre_url.format(page=page)
             response = requests.get(genre_page_url)
             response.raise_for_status()
@@ -102,10 +115,14 @@ if __name__ == '__main__':
                 get_content(id, book_url, book_description)
 
                 book_descriptions.append(book_description)
-                print(1)
+                print(book_url)
 
         with open('descriptions.json', 'w', encoding='utf8') as file:
             json.dump(book_descriptions, file, ensure_ascii=False)
 
     except requests.exceptions.MissingSchema as err:
-        print('Invalid link to book')
+        print(err)
+    except requests.exceptions.HTTPError as err:
+        print(err)
+    except ValueError as err:
+        print('You did not enter a number')
