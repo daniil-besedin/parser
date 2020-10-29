@@ -34,7 +34,7 @@ def get_content(id, url):
     response = requests.get(cover_url, allow_redirects=False)
     response.raise_for_status()
     if response.status_code != 200:
-        return [None, None, None, None]
+        return [None, None, None, None, None]
 
     soup = BeautifulSoup(response.text, 'lxml')
 
@@ -53,7 +53,11 @@ def get_content(id, url):
         comment_text = comment.find('span', class_='black').text
         comments[author] = comment_text
 
-    return [filename, img_url, img_name, comments]
+    html_genres = soup.find('span', class_='d_book').find_all('a')
+    genres = []
+    for html_genre in html_genres:
+        genres.append(html_genre.text)
+    return [filename, img_url, img_name, comments, genres]
 
 
 if __name__ == '__main__':
@@ -61,10 +65,10 @@ if __name__ == '__main__':
         for id in range(1, 11):
             url = 'https://tululu.org'
             download_url = urljoin(url, 'txt.php?id={id}/'.format(id=id))
-            filename, img_url, img_name, comments = get_content(id, url)
+            filename, img_url, img_name, comments, genres = get_content(id, url)
             # if filename:
             # filepath = download_book(download_url, filename)
-            # print('filename =', filename)
+            print('filename =', filename)
             # print('img_url =', img_url)
 
             # if img_url:
@@ -73,10 +77,12 @@ if __name__ == '__main__':
 
             # print('filepath =', filepath, end='\n\n')
 
-            if comments:
-                for author, text in comments.items():
-                    print(author)
-                    print(text, end='\n\n')
+            # if comments:
+            #     for author, text in comments.items():
+            #         print(author)
+            #         print(text, end='\n\n')
+
+            print(genres)
 
     except requests.exceptions.MissingSchema as err:
         print('Invalid link to book')
