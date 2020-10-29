@@ -41,8 +41,10 @@ def download_img(url, filename, folder=os.path.join(MAIN_FOLDER, 'images')):
 
 
 def get_content(id, url, book_description):
-    response = requests.get(url)
+    response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
+    if response.status_code != 200:
+        return
     soup = BeautifulSoup(response.text, 'lxml')
 
     title_and_author_selector = 'h1'
@@ -117,8 +119,10 @@ if __name__ == '__main__':
 
         for page in range(start_page, end_page):
             genre_page_url = template_genre_url.format(page=page)
-            response = requests.get(genre_page_url)
+            response = requests.get(genre_page_url, allow_redirects=False)
             response.raise_for_status()
+            if response.status_code != 200:
+                continue
             soup = BeautifulSoup(response.text, 'lxml')
             books_selector = 'table.d_book'
             books = soup.select(books_selector)
