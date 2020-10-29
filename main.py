@@ -37,7 +37,8 @@ def get_content(id, url, book_description):
     response.raise_for_status()
     soup = BeautifulSoup(response.text, 'lxml')
 
-    title_and_author = soup.find('h1').text.split('::')
+    title_and_author_selector = 'h1'
+    title_and_author = soup.select_one(title_and_author_selector).text.split('::')
     title = title_and_author[0].strip()
     book_description['title'] = title
     filename = sanitize_filename('{title}.txt'.format(title=title))
@@ -49,22 +50,27 @@ def get_content(id, url, book_description):
     author = title_and_author[1].strip()
     book_description['author'] = author
 
-    img = soup.find('div', class_='bookimage').find('img')['src']
+    img_selector = 'div.bookimage img'
+    img = soup.select_one(img_selector)['src']
     split_img_name = img.split('/')
     img_name = sanitize_filename(split_img_name[len(split_img_name) - 1].strip())
     img_url = urljoin(url, img)
     img_path = download_img(img_url, img_name)
     book_description['img_src'] = img_path
 
-    html_comments = soup.find_all('div', class_='texts')
+    comments_selector = 'div.texts'
+    html_comments = soup.select(comments_selector)
     comments = {}
     for comment in html_comments:
-        author = comment.find('b').text
-        comment_text = comment.find('span', class_='black').text
+        author_selector = 'b'
+        author = comment.select_one(author_selector).text
+        comment_text_selector = 'span.black'
+        comment_text = comment.select_one(comment_text_selector).text
         comments[author] = comment_text
     book_description['comments'] = comments
 
-    html_genres = soup.find('span', class_='d_book').find_all('a')
+    genres_selector = 'span.d_book a'
+    html_genres = soup.select(genres_selector)
     genres = []
     for html_genre in html_genres:
         genres.append(html_genre.text)
@@ -83,12 +89,14 @@ if __name__ == '__main__':
             response = requests.get(genre_page_url)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'lxml')
-            books = soup.find_all('table', class_='d_book')
+            books_selector = 'table.d_book'
+            books = soup.select(books_selector)
 
             for book in books:
                 book_description = {}
 
-                url = book.find('a')['href']
+                url_selector = 'a'
+                url = book.select_one(url_selector)['href']
                 id = url.strip('/b')
                 book_url = urljoin(base_url, url)
                 get_content(id, book_url, book_description)
