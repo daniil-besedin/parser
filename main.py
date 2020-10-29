@@ -135,8 +135,7 @@ if __name__ == '__main__':
                 book_descriptions.append(book_description)
                 print(book_url)
 
-        os.makedirs(JSON_PATH, exist_ok=True)
-        with open(os.path.join(JSON_PATH, 'descriptions.json'), 'w', encoding='utf8') as file:
+        with open(JSON_PATH, 'w', encoding='utf8') as file:
             json.dump(book_descriptions, file, ensure_ascii=False)
 
     except requests.exceptions.MissingSchema as err:
