@@ -3,17 +3,19 @@ import os
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
+import json
 
 
 def download_book(url, filename, folder='books'):
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
-    filepath = os.path.join(folder, filename)
+    book_path = os.path.join(folder, filename)
+
     if response.status_code == 200:
-        with open(filepath, 'w', encoding='utf-8') as file:
+        with open(book_path, 'w', encoding='utf-8') as file:
             file.write(response.text)
-        return filepath
+        return book_path
     return None
 
 
@@ -22,6 +24,7 @@ def download_img(url, filename, folder='imgs'):
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
     img_path = os.path.join(folder, filename)
+
     if response.status_code == 200:
         with open(img_path, 'wb') as img:
             img.write(response.content)
@@ -29,22 +32,29 @@ def download_img(url, filename, folder='imgs'):
     return None
 
 
-def get_content(id, url):
-    cover_url = urljoin(url, 'b{id}/'.format(id=id))
-    response = requests.get(cover_url, allow_redirects=False)
+def get_content(id, url, book_description):
+    response = requests.get(url)
     response.raise_for_status()
-    if response.status_code != 200:
-        return [None, None, None, None, None]
-
     soup = BeautifulSoup(response.text, 'lxml')
 
-    title = soup.find('h1').text.split('::')[0].strip()
-    filename = sanitize_filename('{id}. {title}.txt'.format(id=id, title=title))
+    title_and_author = soup.find('h1').text.split('::')
+    title = title_and_author[0].strip()
+    book_description['title'] = title
+    filename = sanitize_filename('{title}.txt'.format(title=title))
+    if filename:
+        download_url = urljoin(base_url, 'txt.php?id={id}/'.format(id=id))
+        filepath = download_book(download_url, filename)
+        book_description['book_path'] = filepath
+
+    author = title_and_author[1].strip()
+    book_description['author'] = author
 
     img = soup.find('div', class_='bookimage').find('img')['src']
     split_img_name = img.split('/')
     img_name = sanitize_filename(split_img_name[len(split_img_name) - 1].strip())
     img_url = urljoin(url, img)
+    img_path = download_img(img_url, img_name)
+    book_description['img_src'] = img_path
 
     html_comments = soup.find_all('div', class_='texts')
     comments = {}
@@ -52,37 +62,42 @@ def get_content(id, url):
         author = comment.find('b').text
         comment_text = comment.find('span', class_='black').text
         comments[author] = comment_text
+    book_description['comments'] = comments
 
     html_genres = soup.find('span', class_='d_book').find_all('a')
     genres = []
     for html_genre in html_genres:
         genres.append(html_genre.text)
-    return [filename, img_url, img_name, comments, genres]
+    book_description['genres'] = genres
 
 
 if __name__ == '__main__':
     try:
-        for id in range(1, 11):
-            url = 'https://tululu.org'
-            download_url = urljoin(url, 'txt.php?id={id}/'.format(id=id))
-            filename, img_url, img_name, comments, genres = get_content(id, url)
-            # if filename:
-            # filepath = download_book(download_url, filename)
-            print('filename =', filename)
-            # print('img_url =', img_url)
+        base_url = 'https://tululu.org'
+        template_genre_url = 'https://tululu.org/l55/{page}'
+        page_number = 1
+        book_descriptions = []
 
-            # if img_url:
-            # img_path = download_img(img_url, img_name)
-            # print('img_path =', img_path)
+        for page in range(1, page_number + 1):
+            genre_page_url = template_genre_url.format(page=page)
+            response = requests.get(genre_page_url)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'lxml')
+            books = soup.find_all('table', class_='d_book')
 
-            # print('filepath =', filepath, end='\n\n')
+            for book in books:
+                book_description = {}
 
-            # if comments:
-            #     for author, text in comments.items():
-            #         print(author)
-            #         print(text, end='\n\n')
+                url = book.find('a')['href']
+                id = url.strip('/b')
+                book_url = urljoin(base_url, url)
+                get_content(id, book_url, book_description)
 
-            print(genres)
+                book_descriptions.append(book_description)
+                print(1)
+
+        with open('descriptions.json', 'w', encoding='utf8') as file:
+            json.dump(book_descriptions, file, ensure_ascii=False)
 
     except requests.exceptions.MissingSchema as err:
         print('Invalid link to book')
