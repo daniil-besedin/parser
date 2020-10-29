@@ -6,8 +6,14 @@ from urllib.parse import urljoin
 import json
 import argparse
 
+MAIN_FOLDER = ''
+SKIP_IMGS = 'no'
+SKIP_TXT = 'no'
+JSON_PATH = ''
+
 
 def download_book(url, filename, folder='books'):
+    folder = os.path.join(MAIN_FOLDER, folder)
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
@@ -20,7 +26,8 @@ def download_book(url, filename, folder='books'):
     return None
 
 
-def download_img(url, filename, folder='imgs'):
+def download_img(url, filename, folder=os.path.join(MAIN_FOLDER, 'images')):
+    folder = os.path.join(MAIN_FOLDER, folder)
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
@@ -45,8 +52,9 @@ def get_content(id, url, book_description):
     filename = sanitize_filename('{title}.txt'.format(title=title))
     if filename:
         download_url = urljoin(base_url, 'txt.php?id={id}/'.format(id=id))
-        filepath = download_book(download_url, filename)
-        book_description['book_path'] = filepath
+        if SKIP_TXT == 'no':
+            filepath = download_book(download_url, filename)
+            book_description['book_path'] = filepath
 
     author = title_and_author[1].strip()
     book_description['author'] = author
@@ -56,8 +64,10 @@ def get_content(id, url, book_description):
     split_img_name = img.split('/')
     img_name = sanitize_filename(split_img_name[len(split_img_name) - 1].strip())
     img_url = urljoin(url, img)
-    img_path = download_img(img_url, img_name)
-    book_description['img_src'] = img_path
+    if SKIP_IMGS == 'no':
+        os.makedirs(MAIN_FOLDER, exist_ok=True)
+        img_path = download_img(img_url, img_name)
+        book_description['img_src'] = img_path
 
     comments_selector = 'div.texts'
     html_comments = soup.select(comments_selector)
@@ -82,6 +92,10 @@ def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--start_page', default=1)
     parser.add_argument('--end_page', default=702)
+    parser.add_argument('--dest_folder', default='resources')
+    parser.add_argument('--skip_imgs', default=False)
+    parser.add_argument('--skip_txt', default=False)
+    parser.add_argument('--json_path', default='resources')
 
     return parser
 
@@ -90,6 +104,10 @@ if __name__ == '__main__':
     try:
         parser = create_parser()
         args = parser.parse_args()
+        MAIN_FOLDER = args.dest_folder
+        SKIP_IMGS = args.skip_imgs
+        SKIP_TXT = args.skip_txt
+        JSON_PATH = args.json_path
 
         base_url = 'https://tululu.org'
         template_genre_url = 'https://tululu.org/l55/{page}'
@@ -117,7 +135,8 @@ if __name__ == '__main__':
                 book_descriptions.append(book_description)
                 print(book_url)
 
-        with open('descriptions.json', 'w', encoding='utf8') as file:
+        os.makedirs(JSON_PATH, exist_ok=True)
+        with open(os.path.join(JSON_PATH, 'descriptions.json'), 'w', encoding='utf8') as file:
             json.dump(book_descriptions, file, ensure_ascii=False)
 
     except requests.exceptions.MissingSchema as err:
