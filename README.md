@@ -10,7 +10,7 @@
 
 Создать виртуальное окружение `python -m venv --copies ./virtualenv`.
 
-Активировать виртуальное окружение `./virtualenv/Scripts/activate.bat`.
+Активировать виртуальное окружение `sourse ./virtualenv/Scripts/activate.bat`.
 
 Установить зависимости проекта `pip install -r requirements.txt`.
 
@@ -30,7 +30,7 @@
 
 ### Как запустить
 
-Пример `main.py --start_page 1 --end_page 2 --dest_folder main --skip_imgs yes --skip_txt yes --json_path main\descriptions.json`.
+Пример `python main.py --start_page 1 --end_page 2 --dest_folder main --skip_imgs --skip_txt --json_path main\descriptions.json`.
 
 ### Цель проекта
 
