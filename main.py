@@ -67,20 +67,15 @@ def get_content(id, url, book_description, base_url, main_folder='', skip_imgs=F
 
     comments_selector = 'div.texts'
     html_comments = soup.select(comments_selector)
-    comments = {}
-    for comment in html_comments:
-        author_selector = 'b'
-        author = comment.select_one(author_selector).text
-        comment_text_selector = 'span.black'
-        comment_text = comment.select_one(comment_text_selector).text
-        comments[author] = comment_text
+    author_selector = 'b'
+    comment_text_selector = 'span.black'
+    comments = {key.select_one(author_selector).text: value.select_one(comment_text_selector).text for key, value in
+                zip(html_comments, html_comments)}
     book_description['comments'] = comments
 
     genres_selector = 'span.d_book a'
     html_genres = soup.select(genres_selector)
-    genres = []
-    for html_genre in html_genres:
-        genres.append(html_genre.text)
+    genres = [html_genre.text for html_genre in html_genres]
     book_description['genres'] = genres
 
 
