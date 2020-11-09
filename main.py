@@ -35,7 +35,7 @@ def download_img(url, filename, folder='images', main_folder=''):
     return None
 
 
-def get_content(id, url, book_description, base_url, main_folder='', skip_imgs='no', skip_txt='no'):
+def get_content(id, url, book_description, base_url, main_folder='', skip_imgs=False, skip_txt=False):
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
     if response.status_code != 200:
@@ -49,7 +49,7 @@ def get_content(id, url, book_description, base_url, main_folder='', skip_imgs='
     filename = sanitize_filename('{title}.txt'.format(title=title))
     if filename:
         download_url = urljoin(base_url, 'txt.php?id={id}/'.format(id=id))
-        if skip_txt == 'no':
+        if not skip_txt:
             filepath = download_book(download_url, filename, main_folder=main_folder)
             book_description['book_path'] = filepath
 
@@ -61,7 +61,7 @@ def get_content(id, url, book_description, base_url, main_folder='', skip_imgs='
     split_img_name = img.split('/')
     img_name = sanitize_filename(split_img_name[len(split_img_name) - 1].strip())
     img_url = urljoin(url, img)
-    if skip_imgs == 'no':
+    if not skip_imgs:
         os.makedirs(main_folder, exist_ok=True)
         img_path = download_img(img_url, img_name, main_folder)
         book_description['img_src'] = img_path
@@ -90,8 +90,8 @@ def create_parser():
     parser.add_argument('--start_page', default=1)
     parser.add_argument('--end_page', default=702)
     parser.add_argument('--dest_folder', default='resources')
-    parser.add_argument('--skip_imgs', default=False)
-    parser.add_argument('--skip_txt', default=False)
+    parser.add_argument('--skip_imgs', action='store_true', default=False)
+    parser.add_argument('--skip_txt', action='store_true', default=False)
     parser.add_argument('--json_path', default='resources')
 
     return parser
