@@ -117,6 +117,7 @@ def main():
             response = requests.get(genre_page_url, allow_redirects=False)
             response.raise_for_status()
             if response.status_code != 200:
+                print('Страниы по адресу {} не существует'.format(genre_page_url))
                 continue
             soup = BeautifulSoup(response.text, 'lxml')
             books_selector = 'table.d_book'
