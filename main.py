@@ -47,7 +47,7 @@ def get_content(id, url, book_description, base_url, main_folder='', skip_imgs=F
     title_and_author = soup.select_one(title_and_author_selector).text.split('::')
     title = title_and_author[0].strip()
     book_description['title'] = title
-    filename = sanitize_filename('{title}.txt'.format(title=title))
+    filename = sanitize_filename('{title}_id={id}.txt'.format(title=title, id=id))
     if filename and not skip_txt:
         download_url = urljoin(base_url, 'txt.php?id={id}/'.format(id=id))
         filepath = download_book(download_url, filename, main_folder=main_folder)
@@ -60,6 +60,7 @@ def get_content(id, url, book_description, base_url, main_folder='', skip_imgs=F
     img = soup.select_one(img_selector)['src']
     split_img_name = img.split('/')
     img_name = sanitize_filename(split_img_name[len(split_img_name) - 1].strip())
+    img_name = id + '_' + img_name
     img_url = urljoin(url, img)
     if not skip_imgs:
         os.makedirs(main_folder, exist_ok=True)
