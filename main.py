@@ -87,8 +87,8 @@ def get_content(id, url, book_description, base_url, main_folder='', skip_imgs=F
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start_page', default=1)
-    parser.add_argument('--end_page', default=702)
+    parser.add_argument('--start_page', type=int, default=1)
+    parser.add_argument('--end_page', type=int, default=702)
     parser.add_argument('--dest_folder', default='resources')
     parser.add_argument('--skip_imgs', action='store_true', default=False)
     parser.add_argument('--skip_txt', action='store_true', default=False)
@@ -108,8 +108,8 @@ def main():
         json_path = args.json_path
         base_url = 'https://tululu.org'
         template_genre_url = 'https://tululu.org/l55/{page}'
-        start_page = int(args.start_page)
-        end_page = int(args.end_page)
+        start_page = args.start_page
+        end_page = args.end_page
         book_descriptions = []
 
         for page in range(start_page, end_page):
