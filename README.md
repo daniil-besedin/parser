@@ -6,6 +6,14 @@
 
 Для работы с проектом необходим Python 3 и библиотеки из файла `requirements.txt`.
 
+Сделать клон проекта `git clone https://github.com/daniil-besedin/parser.git`.
+
+Создать виртуальное окружение `python -m venv --copies ./virtualenv`.
+
+Активировать виртуальное окружение `./virtualenv/Scripts/activate.bat`.
+
+Установить зависимости проекта `pip install -r requirements.txt`.
+
 ### Аргументы
 
 `--start_page` - страница с которой начинается загрузка.
