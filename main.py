@@ -6,14 +6,9 @@ from urllib.parse import urljoin
 import json
 import argparse
 
-MAIN_FOLDER = ''
-SKIP_IMGS = 'no'
-SKIP_TXT = 'no'
-JSON_PATH = ''
 
-
-def download_book(url, filename, folder='books'):
-    folder = os.path.join(MAIN_FOLDER, folder)
+def download_book(url, filename, folder='books', main_folder=''):
+    folder = os.path.join(main_folder, folder)
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
@@ -26,8 +21,8 @@ def download_book(url, filename, folder='books'):
     return None
 
 
-def download_img(url, filename, folder=os.path.join(MAIN_FOLDER, 'images')):
-    folder = os.path.join(MAIN_FOLDER, folder)
+def download_img(url, filename, folder='images', main_folder=''):
+    folder = os.path.join(main_folder, folder)
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
@@ -40,7 +35,7 @@ def download_img(url, filename, folder=os.path.join(MAIN_FOLDER, 'images')):
     return None
 
 
-def get_content(id, url, book_description):
+def get_content(id, url, book_description, base_url, main_folder='', skip_imgs='no', skip_txt='no'):
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
     if response.status_code != 200:
@@ -54,8 +49,8 @@ def get_content(id, url, book_description):
     filename = sanitize_filename('{title}.txt'.format(title=title))
     if filename:
         download_url = urljoin(base_url, 'txt.php?id={id}/'.format(id=id))
-        if SKIP_TXT == 'no':
-            filepath = download_book(download_url, filename)
+        if skip_txt == 'no':
+            filepath = download_book(download_url, filename, main_folder=main_folder)
             book_description['book_path'] = filepath
 
     author = title_and_author[1].strip()
@@ -66,9 +61,9 @@ def get_content(id, url, book_description):
     split_img_name = img.split('/')
     img_name = sanitize_filename(split_img_name[len(split_img_name) - 1].strip())
     img_url = urljoin(url, img)
-    if SKIP_IMGS == 'no':
-        os.makedirs(MAIN_FOLDER, exist_ok=True)
-        img_path = download_img(img_url, img_name)
+    if skip_imgs == 'no':
+        os.makedirs(main_folder, exist_ok=True)
+        img_path = download_img(img_url, img_name, main_folder)
         book_description['img_src'] = img_path
 
     comments_selector = 'div.texts'
@@ -102,15 +97,15 @@ def create_parser():
     return parser
 
 
-if __name__ == '__main__':
+def main():
     try:
         parser = create_parser()
         args = parser.parse_args()
-        MAIN_FOLDER = args.dest_folder
-        SKIP_IMGS = args.skip_imgs
-        SKIP_TXT = args.skip_txt
-        JSON_PATH = args.json_path
 
+        main_folder = args.dest_folder
+        skip_imgs = args.skip_imgs
+        skip_txt = args.skip_txt
+        json_path = args.json_path
         base_url = 'https://tululu.org'
         template_genre_url = 'https://tululu.org/l55/{page}'
         start_page = int(args.start_page)
@@ -134,12 +129,13 @@ if __name__ == '__main__':
                 url = book.select_one(url_selector)['href']
                 id = url.strip('/b')
                 book_url = urljoin(base_url, url)
-                get_content(id, book_url, book_description)
+                get_content(id, book_url, book_description, base_url, main_folder=main_folder, skip_imgs=skip_imgs,
+                            skip_txt=skip_txt)
 
                 book_descriptions.append(book_description)
                 print(book_url)
 
-        with open(JSON_PATH, 'w', encoding='utf8') as file:
+        with open(json_path, 'w', encoding='utf8') as file:
             json.dump(book_descriptions, file, ensure_ascii=False)
 
     except requests.exceptions.MissingSchema as err:
@@ -148,3 +144,7 @@ if __name__ == '__main__':
         print(err)
     except ValueError as err:
         print('You did not enter a number')
+
+
+if __name__ == '__main__':
+    main()
