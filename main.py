@@ -48,7 +48,7 @@ def get_content(id, url, book_description, base_url, main_folder='', skip_imgs=F
     title = title_and_author[0].strip()
     book_description['title'] = title
     filename = sanitize_filename('{title}_id={id}.txt'.format(title=title, id=id))
-    if filename and not skip_txt:
+    if not skip_txt:
         download_url = urljoin(base_url, 'txt.php?id={id}/'.format(id=id))
         filepath = download_book(download_url, filename, main_folder=main_folder)
         book_description['book_path'] = filepath
