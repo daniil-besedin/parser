@@ -139,7 +139,7 @@ def main():
 
             try:
                 get_content(id, book_url, book_description, base_url, main_folder=main_folder, skip_imgs=skip_imgs,
-                        skip_txt=skip_txt)
+                            skip_txt=skip_txt)
             except requests.exceptions.HTTPError as err:
                 print(err)
                 continue
