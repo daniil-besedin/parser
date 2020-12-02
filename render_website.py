@@ -12,7 +12,6 @@ def on_reload():
 
     list_books = list(chunked(books, 2))
     book_pages = list(chunked(list_books, 5))
-    print(len(book_pages))
 
     env = Environment(
         loader=FileSystemLoader('.'),
@@ -22,11 +21,13 @@ def on_reload():
     page_directory = 'pages'
     os.makedirs(page_directory, exist_ok=True)
 
-    for i, book_page in enumerate(book_pages):
+    for i, book_page in enumerate(book_pages, start=1):
         rendered_page = template.render(
-            list_books=book_page
+            book_list=book_page,
+            current_page=i,
+            page_count=len(book_pages)
         )
-        with open(os.path.join(page_directory, 'index{}.html'.format(i + 1)), 'w', encoding="utf8") as file:
+        with open(os.path.join(page_directory, 'index{}.html'.format(i)), 'w', encoding="utf8") as file:
             file.write(rendered_page)
 
 
@@ -34,7 +35,7 @@ def main():
     server = Server()
     on_reload()
     server.watch('template.html', on_reload)
-    server.serve(root='.')
+    server.serve(root='pages/index1.html')
 
 
 if __name__ == '__main__':
