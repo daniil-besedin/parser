@@ -32,6 +32,10 @@
 
 Пример `python main.py --start_page 1 --end_page 2 --dest_folder main --skip_imgs --skip_txt --json_path main\descriptions.json`.
 
+### Наша онлайн библиотека
+
+Ссылка на сайт [free-libary](https://daniil-besedin.github.io/parser/pages/index1.html)
+
 ### Цель проекта
 
 Код написан в образовательных целях на онлайн-курсе для веб-разработчиков [dvmn.org](https://dvmn.org/).
