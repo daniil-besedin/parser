@@ -52,6 +52,7 @@ def get_content(id, url, book_description, base_url, main_folder='', skip_imgs=F
         download_url = urljoin(base_url, 'txt.php?id={id}/'.format(id=id))
         filepath = download_book(download_url, filename, main_folder=main_folder)
         book_description['book_path'] = filepath
+        print()
 
     author = title_and_author[1].strip()
     book_description['author'] = author

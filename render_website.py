@@ -3,7 +3,6 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
 from more_itertools import chunked
 import os
-from pprint import pprint
 
 
 def on_reload():
