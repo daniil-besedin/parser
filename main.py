@@ -6,14 +6,16 @@ from urllib.parse import urljoin
 import json
 import argparse
 from time import sleep
+from pathlib import PurePosixPath
 
 
 def download_book(url, filename, folder='books', main_folder=''):
-    folder = os.path.join(main_folder, folder)
+    folder = PurePosixPath(main_folder) / folder
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, allow_redirects=False, verify=False)
     response.raise_for_status()
-    book_path = os.path.join(folder, filename)
+    book_path = str(folder / filename)
+    print(book_path)
 
     if response.status_code == 200:
         with open(book_path, 'w', encoding='utf-8') as file:
@@ -23,11 +25,11 @@ def download_book(url, filename, folder='books', main_folder=''):
 
 
 def download_img(url, filename, folder='images', main_folder=''):
-    folder = os.path.join(main_folder, folder)
+    folder = PurePosixPath(main_folder) / folder
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, allow_redirects=False, verify=False)
     response.raise_for_status()
-    img_path = os.path.join(folder, filename)
+    img_path = str(folder / filename)
 
     if response.status_code == 200:
         with open(img_path, 'wb') as img:
