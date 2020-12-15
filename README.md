@@ -39,7 +39,3 @@
 ### Наша онлайн библиотека
 
 Ссылка на сайт [free-libary](https://daniil-besedin.github.io/parser/pages/index1.html)
-
-### Цель проекта
-
-Код написан в образовательных целях на онлайн-курсе для веб-разработчиков [dvmn.org](https://dvmn.org/).
